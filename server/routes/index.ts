@@ -1,7 +1,6 @@
 import { Router } from "express"
-const router = Router();
-
 import { createDuty, deleteDuty, getDuties, getDutyById, updateDuty } from "../controllers/duty.controller";
+const router = Router();
 
 router.get('/api/v1/duties', getDuties);
 router.get('/api/v1/duties/:id', getDutyById);
