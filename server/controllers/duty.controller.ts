@@ -1,5 +1,5 @@
 import { QueryResult } from "pg";
-import { pool } from "../database/database";
+import { pool } from "../database/database.connection";
 import { Request, Response } from "express";
 
 export const getDuties = async (request: Request, response: Response): Promise<Response> => {
@@ -29,20 +29,20 @@ export const getDutyById = async (request: Request, response: Response): Promise
 };
 
 export const createDuty = async (request: Request, response: Response): Promise<Response> => {
-    const { name } = request.body;
+    let { name } = request.body;
+    name = name.toLowerCase();
 
-    if (!name) return response.status(404).json("Data not found.");
+    if (!name) return response.json("Name is required.");
 
     try {
+        const nameCheck: QueryResult = await pool.query('SELECT * FROM duties WHERE name = $1', [name]);
+        if (nameCheck.rowCount) return response.status(400).json("The name already exist.");
+
         const result: QueryResult = await pool.query('INSERT INTO duties (name) VALUES ($1)', [name]);
-        console.log(result.rows)
+
         return response.status(201).json({
             message: "Duty successfully created",
-            body: {
-                duties: {
-                    name
-                }
-            }
+            response: result.rowCount
         });
     } catch (error: unknown) {
         return response.status(500).json("Something went wrong.");
@@ -51,7 +51,11 @@ export const createDuty = async (request: Request, response: Response): Promise<
 
 export const updateDuty = async (request: Request, response: Response): Promise<Response> => {
     const id = request.params.id;
-    const { name } = request.body;
+
+    let { name } = request.body;
+    name = name.toLowerCase();
+
+    if (!name) return response.json("Name is required.");
 
     try {
         const result: QueryResult = await pool.query(`SELECT * FROM duties WHERE id = $1`, [id]);
@@ -70,11 +74,8 @@ export const deleteDuty = async (request: Request, response: Response): Promise<
     const id = request.params.id;
 
     try {
-        const result: QueryResult = await pool.query(`SELECT * FROM duties WHERE id = $1`, [id]);
-        if (!result.rowCount) return response.status(404).json("Data not found.");
-
         const deleteResult: QueryResult = await pool.query('DELETE FROM duties WHERE id = $1', [id]);
-        if (!deleteResult.rowCount) console.log('deleted');
+        if (!deleteResult.rowCount) return response.status(404).json("Data not found.");
 
         return response.status(200).json('Duty deleted.');
 
