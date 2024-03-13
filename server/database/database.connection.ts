@@ -2,7 +2,7 @@ import { Pool } from "pg";
 import dotenv from 'dotenv';
 dotenv.config();
 
-let config;
+let config: object;
 if (process.env.NODE_ENV == "dev") {
     config = {
         host: process.env.POSTGRES_HOST_DEV,
