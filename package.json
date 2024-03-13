@@ -5,7 +5,9 @@
   "main": "index.js",
   "scripts": {
     "start:dev": "concurrently \"tsc -w\" \"nodemon dist/index.js\"",
-    "build": "tsc"
+    "build": "tsc",
+    "migrate:create": "npx db-migrate create duties --sql-file",
+    "migrate:run": "db-migrate up"
   },
   "keywords": [],
   "author": "",
